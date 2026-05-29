@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BID - Boletim Informativo Diário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #2b1055, #4A00E0, #c94b4b, #f26622);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        .header-container { text-align: center; margin-bottom: 30px; }
+
+        .header {
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .contador-elenco {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            outline: none;
+        }
+        .search-bar:focus { border: 2px solid #4A00E0; }
+
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .chip {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .chip:hover { background: rgba(255, 255, 255, 0.4); }
+        .chip.active { background: #fff; color: #4A00E0; border-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+        .form-group { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group.coluna { flex-direction: column; }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            background: #f4f7f6;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            color: #333;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            min-width: 200px;
+            outline: none;
+        }
+        input:focus { border-color: #f26622; background: #fff; }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-salvar { background: linear-gradient(to right, #4A00E0, #8E2DE2); color: #fff; }
+        .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(74, 0, 224, 0.4); }
+        .btn-cancelar { background: #f4f4f4; color: #555; }
+        .btn-cancelar:hover { background: #e0e0e0; }
+
+        .grid-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background: linear-gradient(to right, #f26622, #c94b4b);
+        }
+
+        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 20px rgba(0,0,0,0.15); }
+
+        .card.card-alvinegro {
+            background: linear-gradient(135deg, #ffffff 60%, #f0f0f0);
+            border: 1px solid #ddd;
+        }
+        .card.card-alvinegro::before { background: linear-gradient(to right, #000000, #999999, #000000); }
+        .card.card-alvinegro .card-header h2 { color: #000000; font-weight: 800; }
+        .card.card-alvinegro .badge { border-color: #999; }
+
+        .escudo-timao {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 42px;
+            opacity: 0.9;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+            z-index: 2;
+            mix-blend-mode: multiply;
+        }
+        .card.card-alvinegro:hover .escudo-timao {
+            transform: scale(1.1) rotate(5deg);
+            opacity: 1;
+        }
+
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; position: relative; z-index: 3; }
+
+        .avatar-cool {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            min-width: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.1em;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            border: 2px solid #fff;
+            letter-spacing: 1px;
+        }
+
+        .card-header h2 { margin: 0; font-size: 1.2em; color: #1e3c72; font-family: 'Montserrat', sans-serif; max-width: 180px; }
+
+        .status-bid { font-size: 11px; color: #3498db; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+        .data-registro { font-size: 10px; color: #888; margin-top: 2px; }
+
+        .badge-container { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .badge { background: #f0f2f5; color: #555; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #ddd; }
+
+        .card-actions { display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-editar { background: #f0f2f5; color: #333; padding: 8px 15px; flex: 1; }
+        .btn-editar:hover { background: #4A00E0; color: #fff; }
+        .btn-excluir { background: #ffeeee; color: #e74c3c; padding: 8px 15px; flex: 1; }
+        .btn-excluir:hover { background: #e74c3c; color: #fff; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        #toast {
+            visibility: hidden; min-width: 250px; color: #fff;
+            text-align: center; border-radius: 8px; padding: 16px; position: fixed;
+            z-index: 1001; right: 30px; bottom: 30px; font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: 0.5s; opacity: 0;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast.success { background: linear-gradient(to right, #4A00E0, #8E2DE2); }
+        #toast.error { background: linear-gradient(to right, #c94b4b, #e74c3c); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <h1 class="header">⚽ Boletim Informativo Diário (BID)</h1>
+        <div class="contador-elenco">Contratos Ativos: <span id="total-jogadores">0</span></div>
+    </div>
+
+    <div class="glass-panel">
+        <h3 style="margin-top: 0; color: #2b1055; font-family: 'Montserrat', sans-serif;">Cadastrar Novo Jogador</h3>
+        <div class="form-group">
+            <input type="text" id="nome" placeholder="Nome do Jogador" required>
+            <input type="text" id="posicao" placeholder="Posição (Ex: Atacante)" required>
+            <input type="text" id="clube" placeholder="Clube Atual" required>
+        </div>
+        <div>
+            <button class="btn-salvar" onclick="salvarJogador()">Publicar no BID</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="pesquisa" class="search-bar" placeholder="🔍 Pesquisar jogador pelo nome, posição ou clube..." onkeyup="aplicarFiltros()">
+
+        <div class="filter-chips" id="filtro-posicao">
+            <div class="chip active" onclick="setFiltroRapido('Todos', this)">Todos</div>
+            <div class="chip" onclick="setFiltroRapido('Atacantes', this)">Atacantes</div>
+            <div class="chip" onclick="setFiltroRapido('Meio-Campistas', this)">Meio-Campistas</div>
+            <div class="chip" onclick="setFiltroRapido('Laterais', this)">Laterais</div>
+            <div class="chip" onclick="setFiltroRapido('Zagueiros', this)">Zagueiros</div>
+            <div class="chip" onclick="setFiltroRapido('Goleiros', this)">Goleiros</div>
+        </div>
+    </div>
+
+    <div id="lista-jogadores" class="grid-jogadores">
+    </div>
+</div>
+
+<div id="modalEdicao" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top: 0; color: #2b1055; margin-bottom: 20px; font-family: 'Montserrat', sans-serif;">Revisar Contrato</h3>
+        <input type="hidden" id="edit-jogador-id">
+
+        <div class="form-group coluna">
+            <input type="text" id="edit-nome" placeholder="Nome do Jogador" required>
+            <input type="text" id="edit-posicao" placeholder="Posição" required>
+            <input type="text" id="edit-clube" placeholder="Clube Atual" required>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-salvar" style="flex: 2;" onclick="salvarEdicao()">Salvar Alterações</button>
+            <button class="btn-cancelar" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast">Mensagem</div>
+
+<script>
+    const API_URL = '/api/jogadores';
+    let jogadoresMemoria = [];
+    let filtroRapidoAtual = 'Todos';
+
+    const positionMap = {
+        'Goleiros': ['goleiro'],
+        'Zagueiros': ['zagueiro'],
+        'Laterais': ['lateral', 'lateral esquerdo', 'lateral direito'],
+        'Meio-Campistas': ['meia', 'meia atacante', 'meio campo', 'meio-campo', 'meio-campista', 'meio campista', 'volante', 'segundo volante', 'meio central', 'meia direia', 'meia direita', 'meia esquerda'],
+        'Atacantes': ['atacante', 'ponta direita', 'ponta esquerda', 'segundo atacante', 'centroavante', 'ponta']
+    };
+
+    document.addEventListener('DOMContentLoaded', carregarJogadores);
+
+    // Nova função para extrair iniciais
+    function getInitials(name) {
+        if (!name) return '??';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    function getAvatarColor(name) {
+        const colors = [
+            'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', // Roxo/Rosa
+            'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)', // Vermelho/Laranja
+            'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)', // Azul Claro/Azul
+            'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', // Teal/Roxo Escuro
+            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', // Amarelo/Laranja
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Indigo/Roxo
+            'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', // Rosa/Vermelho Vivo
+            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'  // Ciano/Azul
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    }
+
+    function carregarJogadores() {
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(dados => {
+                jogadoresMemoria = dados;
+                aplicarFiltros();
+            })
+            .catch(error => mostrarToast('Erro ao carregar o BID!', 'error'));
+    }
+
+    function renderizarJogadores(dados) {
+        const lista = document.getElementById('lista-jogadores');
+        const contador = document.getElementById('total-jogadores');
+        lista.innerHTML = '';
+
+        contador.innerText = dados.length;
+
+        if (dados.length === 0) {
+            lista.innerHTML = '<p style="color: #fff; text-shadow: 1px 1px 2px #000; grid-column: 1 / -1; text-align: center;">Nenhum contrato encontrado com estes filtros!</p>';
+            return;
+        }
+
+        const hoje = new Date().toLocaleDateString('pt-BR');
+
+        dados.forEach(jogador => {
+            const nomeClube = jogador.clube ? jogador.clube : 'Sem Clube';
+            const isCorinthians = nomeClube.toLowerCase().trim() === 'corinthians' || nomeClube.toLowerCase().trim() === 'sccp';
+            const classeCard = isCorinthians ? 'card card-alvinegro' : 'card';
+
+            const escudoTimãoHTML = isCorinthians
+                ? `<img src="logocorinthians.png" class="escudo-timao" alt="Timão">`
+                : '';
+
+            lista.innerHTML += `
+                    <div class="${classeCard}">
+                        ${escudoTimãoHTML}
+                        <div class="card-header">
+                            <div class="avatar-cool" style="background: ${getAvatarColor(jogador.nome)}">${getInitials(jogador.nome)}</div>
+                            <div>
+                                <h2>${jogador.nome}</h2>
+                                <div class="status-bid">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    REGULARIZADO
+                                </div>
+                                <div class="data-registro">Publicado em: ${hoje}</div>
+                            </div>
+                        </div>
+                        <div class="badge-container">
+                            <div class="badge">👟 ${jogador.posicao}</div>
+                            <div class="badge">🛡️ ${nomeClube}</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-editar" onclick="abrirModalEdicao(${jogador.id}, '${jogador.nome}', '${jogador.posicao}', '${nomeClube}')">Editar Contrato</button>
+                            <button class="btn-excluir" onclick="deletarJogador(${jogador.id})">Rescindir</button>
+                        </div>
+                    </div>
+                `;
+        });
+    }
+
+    function setFiltroRapido(termoFiltro, elemento) {
+        filtroRapidoAtual = termoFiltro;
+
+        document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+        elemento.classList.add('active');
+
+        aplicarFiltros();
+    }
+
+    function aplicarFiltros() {
+        const termoBusca = document.getElementById('pesquisa').value.toLowerCase();
+
+        const dadosFiltrados = jogadoresMemoria.filter(j => {
+            const matchBusca = j.nome.toLowerCase().includes(termoBusca) ||
+                j.posicao.toLowerCase().includes(termoBusca) ||
+                (j.clube && j.clube.toLowerCase().includes(termoBusca));
+
+            let matchChip = false;
+            if (filtroRapidoAtual === 'Todos') {
+                matchChip = true;
+            } else {
+                const termosValidos = positionMap[filtroRapidoAtual];
+                if (termosValidos) {
+                    const posLower = j.posicao.toLowerCase().trim();
+                    matchChip = termosValidos.some(termo => posLower.includes(termo));
+                }
+            }
+
+            return matchBusca && matchChip;
+        });
+
+        renderizarJogadores(dadosFiltrados);
+    }
+
+    function salvarJogador() {
+        const nome = document.getElementById('nome').value;
+        const posicao = document.getElementById('posicao').value;
+        const clube = document.getElementById('clube').value;
+
+        if (!nome || !posicao || !clube) {
+            mostrarToast("Preencha todos os campos da papelada!", "error");
+            return;
+        }
+
+        const payload = { nome: nome, posicao: posicao, clube: clube };
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if (response.ok) {
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#4A00E0', '#f26622', '#c94b4b', '#ffffff'], zIndex: 9999 });
+                    document.getElementById('nome').value = '';
+                    document.getElementById('posicao').value = '';
+                    document.getElementById('clube').value = '';
+                    carregarJogadores();
+                    mostrarToast("Jogador publicado no BID!", "success");
+                } else {
+                    mostrarToast("Erro ao processar contrato no sistema.", "error");
+                }
+            })
+            .catch(error => mostrarToast("Erro de conexão.", "error"));
+    }
+
+    function salvarEdicao() {
+        const id = document.getElementById('edit-jogador-id').value;
+        const nome = document.getElementById('edit-nome').value;
+        const posicao = document.getElementById('edit-posicao').value;
+        const clube = document.getElementById('edit-clube').value;
+
+        if (!nome || !posicao || !clube) {
+            mostrarToast("Preencha todos os campos!", "error");
+            return;
+        }
+
+        const payload = { nome: nome, posicao: posicao, clube: clube };
+
+        fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(response => {
+                if (response.ok) {
+                    fecharModal();
+                    carregarJogadores();
+                    mostrarToast("Contrato atualizado com sucesso!", "success");
+                } else {
+                    mostrarToast("Erro ao atualizar contrato.", "error");
+                }
+            })
+            .catch(error => mostrarToast("Erro de conexão.", "error"));
+    }
+
+    function abrirModalEdicao(id, nome, posicao, clube) {
+        document.getElementById('edit-jogador-id').value = id;
+        document.getElementById('edit-nome').value = nome;
+        document.getElementById('edit-posicao').value = posicao;
+        document.getElementById('edit-clube').value = clube === 'Sem Clube' ? '' : clube;
+
+        document.getElementById('modalEdicao').style.display = 'flex';
+    }
+
+    function fecharModal() {
+        document.getElementById('modalEdicao').style.display = 'none';
+    }
+
+    function deletarJogador(id) {
+        if (confirm('Atenção: Tem certeza que deseja rescindir este contrato? Esta ação é irreversível.')) {
+            fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        carregarJogadores();
+                        mostrarToast("Contrato rescindido com sucesso.", "success");
+                    }
+                });
+        }
+    }
+
+    function mostrarToast(mensagem, tipo) {
+        const toast = document.getElementById("toast");
+        toast.innerText = mensagem;
+        toast.className = "show " + tipo;
+        setTimeout(function(){ toast.className = toast.className.replace("show " + tipo, ""); }, 3000);
+    }
+</script>
+</body>
+</html>
