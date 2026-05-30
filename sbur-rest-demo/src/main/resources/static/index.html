@@ -3,321 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BID - Boletim Informativo Diário</title>
+    <title>BID & Tática - Sistema de Futebol</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0; font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(-45deg, #2b1055, #4A00E0, #c94b4b, #f26622);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: #333;
-            min-height: 100vh;
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: #333;
+            height: 100vh; display: flex; overflow: hidden;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px; background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255,255,255,0.05); color: #fff; display: flex;
+            flex-direction: column; box-shadow: 4px 0 25px rgba(0,0,0,0.3); z-index: 100;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .container { max-width: 1000px; margin: 0 auto; }
+        .sidebar.collapsed { width: 76px; }
+        .sidebar.collapsed .sidebar-header h2, .sidebar.collapsed .nav-text { display: none; }
 
-        .header-container { text-align: center; margin-bottom: 30px; }
+        .menu-toggle { padding: 20px; cursor: pointer; display: flex; align-items: center; color: #aaa; transition: color 0.3s; }
+        .menu-toggle:hover { color: #fff; }
+        .sidebar.collapsed .menu-toggle { justify-content: center; }
 
-        .header {
-            font-family: 'Montserrat', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #fff;
-            text-shadow: 2px 4px 10px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-            font-size: 2.2em;
-        }
+        .sidebar-header { padding: 0 20px 20px 20px; display: flex; align-items: center; font-family: 'Montserrat', sans-serif; }
+        .sidebar-header h2 { margin: 0; font-size: 1.4em; letter-spacing: 1px; background: linear-gradient(to right, #fff, #ccc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .contador-elenco {
-            display: inline-block;
-            background: rgba(0, 0, 0, 0.4);
-            color: #fff;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; padding: 0 12px; }
+        .nav-item { padding: 14px 15px; cursor: pointer; font-weight: 600; font-size: 14px; border-radius: 8px; transition: all 0.2s ease; display: flex; align-items: center; gap: 15px; color: #bbb; }
+        .nav-item .icon { font-size: 1.2em; min-width: 24px; text-align: center; display: flex; align-items: center; justify-content: center; }
+        .nav-item .icon img { max-width: 22px; max-height: 22px; object-fit: contain; }
+        .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .nav-item.active { background: linear-gradient(to right, rgba(74, 0, 224, 0.4), rgba(142, 45, 226, 0.2)); color: #fff; border-left: 3px solid #8E2DE2; }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
+        .sidebar.collapsed .nav-menu { align-items: center; }
+        .sidebar.collapsed .nav-item { justify-content: center; padding: 0; width: 44px; height: 44px; border-radius: 12px; }
+        .sidebar.collapsed .nav-item.active { border-left: none; background: rgba(74, 0, 224, 0.5); }
 
-        .search-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
+        .tela { display: none; animation: fadeIn 0.4s ease; }
+        .tela.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .search-bar {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-            outline: none;
-        }
-        .search-bar:focus { border: 2px solid #4A00E0; }
-
-        .filter-chips {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .chip {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.3);
-            transition: all 0.3s;
-            backdrop-filter: blur(5px);
-        }
-        .chip:hover { background: rgba(255, 255, 255, 0.4); }
-        .chip.active { background: #fff; color: #4A00E0; border-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-
+        /* Estilos Base */
+        .header { font-family: 'Montserrat', sans-serif; text-transform: uppercase; color: #fff; text-shadow: 2px 4px 10px rgba(0,0,0,0.5); margin-bottom: 10px; font-size: 2.2em; margin-top: 0; }
+        .contador-elenco { display: inline-block; background: rgba(0, 0, 0, 0.4); color: #fff; padding: 6px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;}
+        .glass-panel { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
         .form-group { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .form-group.coluna { flex-direction: column; }
-
-        input {
-            flex: 1;
-            padding: 12px;
-            background: #f4f7f6;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            color: #333;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            min-width: 200px;
-            outline: none;
-        }
-        input:focus { border-color: #f26622; background: #fff; }
-
-        button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
+        input, select { flex: 1; padding: 12px; background: #f4f7f6; border: 1px solid #ddd; border-radius: 6px; font-family: 'Poppins', sans-serif; outline: none; }
+        button { padding: 12px 25px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         .btn-salvar { background: linear-gradient(to right, #4A00E0, #8E2DE2); color: #fff; }
         .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(74, 0, 224, 0.4); }
         .btn-cancelar { background: #f4f4f4; color: #555; }
         .btn-cancelar:hover { background: #e0e0e0; }
 
-        .grid-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        /* --- FILTROS DE PESQUISA (DE VOLTA!) --- */
+        .search-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
+        .search-bar { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-family: 'Poppins', sans-serif; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; outline: none; }
+        .search-bar:focus { border: 2px solid #4A00E0; }
+        .filter-chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .chip { background: rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s; backdrop-filter: blur(5px); }
+        .chip:hover { background: rgba(255, 255, 255, 0.4); }
+        .chip.active { background: #fff; color: #4A00E0; border-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 
-        .card {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
+        /* --- CARDS --- */
+        .grid-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(to right, #f26622, #c94b4b); }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.15); }
+        .card-alvinegro { background: linear-gradient(135deg, #ffffff 60%, #f0f0f0); border: 1px solid #ccc; }
+        .card-alvinegro::before { background: linear-gradient(to right, #000, #555, #000); }
+        .card-alvinegro .card-header h2 { color: #000; font-weight: 800; }
+        .escudo-timao { position: absolute; top: 15px; right: 15px; width: 34px; opacity: 0.9; z-index: 2; mix-blend-mode: multiply; }
+        .bandeira-pais { position: absolute; top: 60px; right: 23px; width: 18px; border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 2; }
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 5px; z-index: 3; position: relative; }
+        .avatar-photo { border-radius: 50%; width: 70px; height: 70px; object-fit: cover; object-position: top center; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15); background-color: #f0f2f5; }
+        .avatar-cool { border-radius: 50%; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.3em; font-family: 'Montserrat'; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);}
+        .card-header h2 { margin: 0; font-size: 1.1em; max-width: 150px; line-height: 1.2; }
+        .card-actions { display: flex; gap: 8px; border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
+        .btn-editar { background: #f0f2f5; color: #333; padding: 8px; flex: 1; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;}
+        .btn-editar:hover { background: #e0e4e8; }
+        .btn-excluir { background: #ffeeee; color: #e74c3c; padding: 8px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer;}
+        .btn-excluir:hover { background: #fcdcdc; }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 5px;
-            background: linear-gradient(to right, #f26622, #c94b4b);
-        }
+        /* --- MODAIS E TOAST --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); position: relative; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 20px rgba(0,0,0,0.15); }
+        /* Perfil do Jogador (DE VOLTA!) */
+        .perfil-header { text-align: center; margin-bottom: 20px; position: relative; }
+        .perfil-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; object-position: top center; border: 4px solid #4A00E0; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        .perfil-avatar-iniciais { width: 120px; height: 120px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 2.5em; font-family: 'Montserrat', sans-serif; border: 4px solid #4A00E0; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        .perfil-nome { font-family: 'Montserrat', sans-serif; font-size: 1.8em; color: #2b1055; margin: 0; }
+        .perfil-posicao { color: #888; font-weight: 600; font-size: 1em; text-transform: uppercase; margin-bottom: 15px; }
+        .perfil-stats { display: flex; justify-content: space-around; background: #f4f7f6; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 10px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .stat-value { font-size: 1.2em; color: #333; font-weight: 800; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px;}
+        .stat-value img { width: 20px; border-radius: 2px; }
 
-        .card.card-alvinegro {
-            background: linear-gradient(135deg, #ffffff 60%, #f0f0f0);
-            border: 1px solid #ddd;
-        }
-        .card.card-alvinegro::before { background: linear-gradient(to right, #000000, #999999, #000000); }
-        .card.card-alvinegro .card-header h2 { color: #000000; font-weight: 800; }
-        .card.card-alvinegro .badge { border-color: #999; }
-
-        .escudo-timao {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 42px;
-            opacity: 0.9;
-            transition: transform 0.3s ease;
-            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
-            z-index: 2;
-            mix-blend-mode: multiply;
-        }
-        .card.card-alvinegro:hover .escudo-timao {
-            transform: scale(1.1) rotate(5deg);
-            opacity: 1;
-        }
-
-        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; position: relative; z-index: 3; }
-
-        .avatar-cool {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            min-width: 50px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 1.1em;
-            font-family: 'Montserrat', sans-serif;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            border: 2px solid #fff;
-            letter-spacing: 1px;
-        }
-
-        .card-header h2 { margin: 0; font-size: 1.2em; color: #1e3c72; font-family: 'Montserrat', sans-serif; max-width: 180px; }
-
-        .status-bid { font-size: 11px; color: #3498db; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
-        .data-registro { font-size: 10px; color: #888; margin-top: 2px; }
-
-        .badge-container { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-        .badge { background: #f0f2f5; color: #555; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #ddd; }
-
-        .card-actions { display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
-        .btn-editar { background: #f0f2f5; color: #333; padding: 8px 15px; flex: 1; }
-        .btn-editar:hover { background: #4A00E0; color: #fff; }
-        .btn-excluir { background: #ffeeee; color: #e74c3c; padding: 8px 15px; flex: 1; }
-        .btn-excluir:hover { background: #e74c3c; color: #fff; }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-            position: relative;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        #toast {
-            visibility: hidden; min-width: 250px; color: #fff;
-            text-align: center; border-radius: 8px; padding: 16px; position: fixed;
-            z-index: 1001; right: 30px; bottom: 30px; font-size: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: 0.5s; opacity: 0;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-        }
+        #toast { visibility: hidden; min-width: 250px; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1001; right: 30px; bottom: 30px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: 0.5s; opacity: 0; font-weight: 600; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
         #toast.success { background: linear-gradient(to right, #4A00E0, #8E2DE2); }
         #toast.error { background: linear-gradient(to right, #c94b4b, #e74c3c); }
+
+        /* --- TELA ESCALAÇÃO --- */
+        .controle-tatico-header { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        .controle-tatico-header .controles { display: flex; align-items: center; gap: 15px; }
+        .controle-tatico-header select { max-width: 200px; background: #222; color: #fff; border: 1px solid #555; }
+        .btn-limpar { background: #e74c3c; color: #fff; }
+        .btn-limpar:hover { background: #c0392b; box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4); transform: translateY(-2px); }
+
+        .escalacao-container { display: flex; gap: 30px; height: 80vh; max-height: 850px; }
+        .campo-preto { position: relative; background: #111; height: 100%; width: auto; aspect-ratio: 2/3; border: 3px solid #444; border-radius: 10px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.5); background-image: linear-gradient(to bottom, transparent 49.5%, #444 49.5%, #444 50.5%, transparent 50.5%); flex: 0 0 auto; }
+        .linha-central { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; border: 3px solid #444; border-radius: 50%; }
+        .area-cima { position: absolute; top: 0; left: 20%; width: 60%; height: 15%; border: 3px solid #444; border-top: none; }
+        .area-baixo { position: absolute; bottom: 0; left: 20%; width: 60%; height: 15%; border: 3px solid #444; border-bottom: none; }
+
+        .bolinha-jogador { position: absolute; width: 44px; height: 44px; background: #222; border: 3px solid #f26622; border-radius: 50%; transform: translate(-50%, 0); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 10px rgba(0,0,0,0.6); z-index: 5; }
+        .bolinha-jogador:hover { transform: translate(-50%, 0) scale(1.15); border-color: #fff; z-index: 10; }
+        .bolinha-img-container { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #333; }
+        .bolinha-img-container img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+        .sigla-posicao { position: absolute; bottom: -24px; background: rgba(0,0,0,0.85); color: #fff; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; white-space: nowrap; z-index: 10; border: 1px solid #444;}
+
+        /* Modal Lista Escalação */
+        .modal-lista-content { max-height: 80vh; overflow-y: auto; }
+        .lista-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; border-radius: 8px;}
+        .lista-item:hover { background: #f0f4f8; }
+        .lista-item img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; object-position: top center;}
+
+        /* Painel Direito (Plantel) */
+        .painel-direito { flex: 1; height: 100%; }
+        .painel-elenco { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 20px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+        .titulo-elenco { margin-top: 0; font-family: 'Montserrat'; color: #2b1055; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .lista-scroll { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .sessao-titulo { font-size: 12px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 15px 0 10px 0; }
+        .sessao-titulares { color: #27ae60; }
+        .sessao-reservas { color: #7f8c8d; }
+        .item-elenco-direito { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #f4f4f4; transition: 0.2s; }
+        .item-elenco-direito:hover { background: #f9f9f9; border-radius: 6px; }
+        .item-elenco-direito img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; object-position: top center; border: 1px solid #ddd; }
+        .avatar-mini { width: 35px; height: 35px; border-radius: 50%; background: #555; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; font-family: 'Montserrat'; }
+        .item-elenco-direito .info { flex: 1; line-height: 1.2; }
+        .item-elenco-direito .nome { font-size: 13px; font-weight: 600; color: #333; }
+        .item-elenco-direito .pos { font-size: 11px; color: #888; }
+        .status-bolinha { width: 10px; height: 10px; border-radius: 50%; }
+        .status-titular { background: #27ae60; box-shadow: 0 0 6px rgba(39, 174, 96, 0.6); }
+        .status-reserva { background: #bdc3c7; }
 
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-container">
-        <h1 class="header">⚽ Boletim Informativo Diário (BID)</h1>
-        <div class="contador-elenco">Contratos Ativos: <span id="total-jogadores">0</span></div>
+<nav class="sidebar" id="sidebar">
+    <div class="menu-toggle" onclick="toggleSidebar()">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
     </div>
-
-    <div class="glass-panel">
-        <h3 style="margin-top: 0; color: #2b1055; font-family: 'Montserrat', sans-serif;">Cadastrar Novo Jogador</h3>
-        <div class="form-group">
-            <input type="text" id="nome" placeholder="Nome do Jogador" required>
-            <input type="text" id="posicao" placeholder="Posição (Ex: Atacante)" required>
-            <input type="text" id="clube" placeholder="Clube Atual" required>
+    <div class="sidebar-header">
+        <h2>Menu</h2>
+    </div>
+    <div class="nav-menu">
+        <div class="nav-item active" onclick="mudarAba('registro', this)">
+            <span class="icon">📋</span>
+            <span class="nav-text">Boletim (BID)</span>
         </div>
-        <div>
+        <div class="nav-item" onclick="mudarAba('elenco', this)">
+            <span class="icon">🦅</span>
+            <span class="nav-text">Elenco - Corinthians</span>
+        </div>
+        <div class="nav-item" onclick="mudarAba('escalacao', this)">
+            <span class="icon">♟️</span>
+            <span class="nav-text">Escalação</span>
+        </div>
+    </div>
+</nav>
+
+<main class="main-content">
+
+    <div id="tela-registro" class="tela active">
+        <h1 class="header">Boletim Informativo Diário</h1>
+        <div class="contador-elenco">Contratos Ativos: <span id="total-jogadores">0</span></div>
+
+        <div class="glass-panel">
+            <h3 style="margin-top: 0; color: #2b1055;">Registrar Nova Transferência</h3>
+            <div class="form-group">
+                <input type="text" id="nome" placeholder="Nome" required>
+                <input type="text" id="posicao" placeholder="Posição" required>
+                <input type="text" id="clube" placeholder="Clube" required>
+                <input type="number" id="numero" placeholder="Nº Camisa" style="max-width: 110px;">
+                <input type="text" id="pais" placeholder="País (Ex: br)" style="max-width: 120px;">
+            </div>
             <button class="btn-salvar" onclick="salvarJogador()">Publicar no BID</button>
         </div>
+
+        <div class="search-container">
+            <input type="text" id="pesquisa" class="search-bar" placeholder="🔍 Pesquisar jogador pelo nome, posição ou clube..." onkeyup="aplicarFiltros()">
+            <div class="filter-chips" id="filtro-posicao">
+                <div class="chip active" onclick="setFiltroRapido('Todos', this)">Todos</div>
+                <div class="chip" onclick="setFiltroRapido('Atacantes', this)">Atacantes</div>
+                <div class="chip" onclick="setFiltroRapido('Meio-Campistas', this)">Meio-Campistas</div>
+                <div class="chip" onclick="setFiltroRapido('Laterais', this)">Laterais</div>
+                <div class="chip" onclick="setFiltroRapido('Zagueiros', this)">Zagueiros</div>
+                <div class="chip" onclick="setFiltroRapido('Goleiros', this)">Goleiros</div>
+            </div>
+        </div>
+
+        <div id="lista-jogadores" class="grid-jogadores"></div>
     </div>
 
-    <div class="search-container">
-        <input type="text" id="pesquisa" class="search-bar" placeholder="🔍 Pesquisar jogador pelo nome, posição ou clube..." onkeyup="aplicarFiltros()">
+    <div id="tela-elenco" class="tela">
+        <h1 class="header">Elenco - Corinthians</h1>
+        <div class="contador-elenco" style="background: rgba(255,255,255,0.9); color: #000; border: 1px solid #000;">
+            Jogadores do Timão: <span id="total-corinthians">0</span>
+        </div>
+        <div id="lista-corinthians" class="grid-jogadores"></div>
+    </div>
 
-        <div class="filter-chips" id="filtro-posicao">
-            <div class="chip active" onclick="setFiltroRapido('Todos', this)">Todos</div>
-            <div class="chip" onclick="setFiltroRapido('Atacantes', this)">Atacantes</div>
-            <div class="chip" onclick="setFiltroRapido('Meio-Campistas', this)">Meio-Campistas</div>
-            <div class="chip" onclick="setFiltroRapido('Laterais', this)">Laterais</div>
-            <div class="chip" onclick="setFiltroRapido('Zagueiros', this)">Zagueiros</div>
-            <div class="chip" onclick="setFiltroRapido('Goleiros', this)">Goleiros</div>
+    <div id="tela-escalacao" class="tela">
+        <div class="controle-tatico-header">
+            <h1 class="header" style="margin: 0; font-size: 1.8em;">Prancheta Tática</h1>
+            <div class="controles">
+                <span style="color: #fff; font-family: 'Montserrat'; font-size: 1.1em;">Formação:</span>
+                <select id="select-formacao" onchange="desenharCampo()">
+                    <option value="4-3-3">4-3-3 Ofensivo</option>
+                    <option value="4-2-3-1">4-2-3-1 Padrão</option>
+                    <option value="4-1-2-1-2">4-1-2-1-2 Losango</option>
+                    <option value="4-4-2">4-4-2 Clássico</option>
+                </select>
+                <button class="btn-salvar btn-limpar" onclick="limparEscalacao()">Limpar Campo</button>
+            </div>
+        </div>
+
+        <div class="escalacao-container">
+            <div class="campo-preto" id="campo-futebol">
+                <div class="linha-central"></div>
+                <div class="area-cima"></div>
+                <div class="area-baixo"></div>
+            </div>
+            <div class="painel-direito">
+                <div class="painel-elenco">
+                    <h3 class="titulo-elenco">Plantel Disponível</h3>
+                    <div class="lista-scroll">
+                        <div class="sessao-titulo sessao-titulares">Escalados (Titulares)</div>
+                        <div id="lista-titulares"></div>
+                        <div class="sessao-titulo sessao-reservas">Banco de Reservas</div>
+                        <div id="lista-reservas"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div id="lista-jogadores" class="grid-jogadores">
-    </div>
-</div>
+</main>
 
 <div id="modalEdicao" class="modal-overlay">
     <div class="modal-content">
-        <h3 style="margin-top: 0; color: #2b1055; margin-bottom: 20px; font-family: 'Montserrat', sans-serif;">Revisar Contrato</h3>
+        <h3 style="margin-top: 0; color: #2b1055; margin-bottom: 20px; font-family: 'Montserrat';">Revisar Contrato</h3>
         <input type="hidden" id="edit-jogador-id">
-
         <div class="form-group coluna">
             <input type="text" id="edit-nome" placeholder="Nome do Jogador" required>
             <input type="text" id="edit-posicao" placeholder="Posição" required>
             <input type="text" id="edit-clube" placeholder="Clube Atual" required>
+            <div style="display: flex; gap: 15px;">
+                <input type="number" id="edit-numero" placeholder="Nº Camisa" required>
+                <input type="text" id="edit-pais" placeholder="País (Ex: br)" required>
+            </div>
         </div>
-
         <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="btn-salvar" style="flex: 2;" onclick="salvarEdicao()">Salvar Alterações</button>
-            <button class="btn-cancelar" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-salvar" style="flex: 2;" onclick="salvarEdicao()">Atualizar</button>
+            <button class="btn-cancelar" style="flex: 1;" onclick="fecharModalEdicao()">Cancelar</button>
         </div>
     </div>
 </div>
 
-<div id="toast">Mensagem</div>
+<div id="modalPerfil" class="modal-overlay">
+    <div class="modal-content" style="max-width: 350px;">
+        <div id="perfil-conteudo"></div>
+        <button class="btn-cancelar" style="width: 100%; margin-top: 15px;" onclick="fecharModalPerfil()">Fechar Perfil</button>
+    </div>
+</div>
+
+<div id="modalListaJogadores" class="modal-overlay">
+    <div class="modal-content modal-lista-content">
+        <h3 style="margin-top: 0; text-align: center; color: #2b1055; font-family: 'Montserrat';">Convocar para a Posição</h3>
+        <input type="text" id="pesquisa-lista" placeholder="Buscar jogador..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;" onkeyup="filtrarListaEscalacao()">
+        <div id="conteudo-lista-jogadores" style="display: flex; flex-direction: column; gap: 5px;"></div>
+        <button class="btn-cancelar" onclick="fecharListaEscalacao()" style="width: 100%; margin-top: 15px;">Voltar</button>
+    </div>
+</div>
+
+<div id="toast">Notificação</div>
 
 <script>
     const API_URL = '/api/jogadores';
     let jogadoresMemoria = [];
-    let filtroRapidoAtual = 'Todos';
+    let bolinhaAtualId = null;
+    let filtroRapidoAtual = 'Todos'; // Lógica de filtro restaurada
 
+    // Mapeamento de posições para o filtro
     const positionMap = {
         'Goleiros': ['goleiro'],
         'Zagueiros': ['zagueiro'],
@@ -326,222 +320,292 @@
         'Atacantes': ['atacante', 'ponta direita', 'ponta esquerda', 'segundo atacante', 'centroavante', 'ponta']
     };
 
-    document.addEventListener('DOMContentLoaded', carregarJogadores);
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
-    // Nova função para extrair iniciais
-    function getInitials(name) {
-        if (!name) return '??';
-        const parts = name.trim().split(/\s+/);
-        if (parts.length >= 2) {
-            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
+    function mudarAba(telaId, navElement) {
+        document.querySelectorAll('.tela').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('tela-' + telaId).classList.add('active');
+        navElement.classList.add('active');
     }
 
-    function getAvatarColor(name) {
-        const colors = [
-            'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', // Roxo/Rosa
-            'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)', // Vermelho/Laranja
-            'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)', // Azul Claro/Azul
-            'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', // Teal/Roxo Escuro
-            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', // Amarelo/Laranja
-            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Indigo/Roxo
-            'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', // Rosa/Vermelho Vivo
-            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'  // Ciano/Azul
-        ];
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return colors[Math.abs(hash) % colors.length];
-    }
+    const playerPhotos = {
+        'andré': 'andre.png', 'andré carrillo': 'andrecarrillo.png', 'breno bidon': 'brenobidon.png', 'yuri alberto': 'yurialberto.png',
+        'memphis depay': 'memphisdepay.png', 'jesse lingard': 'jesselingard.png', 'gustavo henrique': 'gustavohenrique.png',
+        'hugo souza': 'hugosouza.png', 'gabriel paulista': 'gabrielpaulista.png', 'matheus bidu': 'matheusbidu.png',
+        'matheuzinho': 'matheuzinho.png', 'rodrigo garro': 'rodrigogarro.png', 'zakaria labyad': 'zakarialabyad.png',
+        'kaio césar': 'kaiocesar.png', 'kaio cesar': 'kaiocesar.png', 'allan': 'allan.png', 'raniele': 'raniele.png',
+        'cristiano ronaldo': 'cristianoronaldo.png', 'kylian mbappé': 'mbappe.webp', 'kylian mbappe': 'mbappe.webp',
+        'lionel messi': 'messi.webp', 'vini jr': 'viniciusjr.webp', 'vinicius jr': 'viniciusjr.webp', 'vinicius júnior': 'viniciusjr.webp', 'vinicius junior': 'viniciusjr.webp'
+    };
+
+    const playerDetails = {
+        'memphis depay': { pais: 'nl', numero: 94 }, 'yuri alberto': { pais: 'br', numero: 9 }, 'andré carrillo': { pais: 'pe', numero: 19 },
+        'rodrigo garro': { pais: 'ar', numero: 10 }, 'jesse lingard': { pais: 'gb-eng', numero: 11 }, 'zakaria labyad': { pais: 'ma', numero: 14 },
+        'hugo souza': { pais: 'br', numero: 1 }, 'gustavo henrique': { pais: 'br', numero: 13 }, 'breno bidon': { pais: 'br', numero: 27 },
+        'gabriel paulista': { pais: 'br', numero: 3 }, 'matheus bidu': { pais: 'br', numero: 21 }, 'matheuzinho': { pais: 'br', numero: 2 }, 'andré': { pais: 'br', numero: 5 }
+    };
+
+    const formacoesTaticas = {
+        '4-3-3': [ { id: 1, pos: 'GOL', bottom: '8%', left: '50%' }, { id: 2, pos: 'LD', bottom: '25%', left: '85%' }, { id: 3, pos: 'ZAG', bottom: '22%', left: '65%' }, { id: 4, pos: 'ZAG', bottom: '22%', left: '35%' }, { id: 5, pos: 'LE', bottom: '25%', left: '15%' }, { id: 6, pos: 'VOL', bottom: '40%', left: '50%' }, { id: 7, pos: 'MEI', bottom: '55%', left: '70%' }, { id: 8, pos: 'MEI', bottom: '55%', left: '30%' }, { id: 9, pos: 'PD', bottom: '80%', left: '80%' }, { id: 10, pos: 'ATA', bottom: '85%', left: '50%' }, { id: 11, pos: 'PE', bottom: '80%', left: '20%' } ],
+        '4-2-3-1': [ { id: 1, pos: 'GOL', bottom: '8%', left: '50%' }, { id: 2, pos: 'LD', bottom: '25%', left: '85%' }, { id: 3, pos: 'ZAG', bottom: '20%', left: '65%' }, { id: 4, pos: 'ZAG', bottom: '20%', left: '35%' }, { id: 5, pos: 'LE', bottom: '25%', left: '15%' }, { id: 6, pos: 'VOL', bottom: '40%', left: '60%' }, { id: 7, pos: 'VOL', bottom: '40%', left: '40%' }, { id: 8, pos: 'MD', bottom: '65%', left: '80%' }, { id: 9, pos: 'MAC', bottom: '60%', left: '50%' }, { id: 10, pos: 'ME', bottom: '65%', left: '20%' }, { id: 11, pos: 'ATA', bottom: '85%', left: '50%' } ],
+        '4-1-2-1-2': [ { id: 1, pos: 'GOL', bottom: '8%', left: '50%' }, { id: 2, pos: 'LD', bottom: '25%', left: '85%' }, { id: 3, pos: 'ZAG', bottom: '20%', left: '65%' }, { id: 4, pos: 'ZAG', bottom: '20%', left: '35%' }, { id: 5, pos: 'LE', bottom: '25%', left: '15%' }, { id: 6, pos: 'VOL', bottom: '38%', left: '50%' }, { id: 7, pos: 'MC', bottom: '52%', left: '65%' }, { id: 8, pos: 'MC', bottom: '52%', left: '35%' }, { id: 9, pos: 'MAC', bottom: '68%', left: '50%' }, { id: 10, pos: 'ATA', bottom: '85%', left: '60%' }, { id: 11, pos: 'ATA', bottom: '85%', left: '40%' } ],
+        '4-4-2': [ { id: 1, pos: 'GOL', bottom: '8%', left: '50%' }, { id: 2, pos: 'LD', bottom: '25%', left: '85%' }, { id: 3, pos: 'ZAG', bottom: '20%', left: '65%' }, { id: 4, pos: 'ZAG', bottom: '20%', left: '35%' }, { id: 5, pos: 'LE', bottom: '25%', left: '15%' }, { id: 6, pos: 'MD', bottom: '50%', left: '80%' }, { id: 7, pos: 'MC', bottom: '45%', left: '60%' }, { id: 8, pos: 'MC', bottom: '45%', left: '40%' }, { id: 9, pos: 'ME', bottom: '50%', left: '20%' }, { id: 10, pos: 'ATA', bottom: '80%', left: '65%' }, { id: 11, pos: 'ATA', bottom: '80%', left: '35%' } ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => { carregarJogadores(); desenharCampo(); });
+
+    function getInitials(name) { if (!name) return '??'; const parts = name.trim().split(/\s+/); return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.substring(0, 2).toUpperCase(); }
+    function mostrarToast(msg, tipo) { const toast = document.getElementById("toast"); toast.innerText = msg; toast.className = "show " + tipo; setTimeout(() => { toast.className = toast.className.replace("show " + tipo, ""); }, 3000); }
 
     function carregarJogadores() {
-        fetch(API_URL)
-            .then(response => response.json())
-            .then(dados => {
-                jogadoresMemoria = dados;
-                aplicarFiltros();
-            })
-            .catch(error => mostrarToast('Erro ao carregar o BID!', 'error'));
+        fetch(API_URL).then(res => res.json()).then(dados => {
+            jogadoresMemoria = dados;
+            renderizarListasGerais();
+            atualizarPainelLateral();
+        }).catch(err => console.error(err));
     }
 
-    function renderizarJogadores(dados) {
-        const lista = document.getElementById('lista-jogadores');
-        const contador = document.getElementById('total-jogadores');
-        lista.innerHTML = '';
-
-        contador.innerText = dados.length;
-
-        if (dados.length === 0) {
-            lista.innerHTML = '<p style="color: #fff; text-shadow: 1px 1px 2px #000; grid-column: 1 / -1; text-align: center;">Nenhum contrato encontrado com estes filtros!</p>';
-            return;
-        }
-
-        const hoje = new Date().toLocaleDateString('pt-BR');
-
-        dados.forEach(jogador => {
-            const nomeClube = jogador.clube ? jogador.clube : 'Sem Clube';
-            const isCorinthians = nomeClube.toLowerCase().trim() === 'corinthians' || nomeClube.toLowerCase().trim() === 'sccp';
-            const classeCard = isCorinthians ? 'card card-alvinegro' : 'card';
-
-            const escudoTimãoHTML = isCorinthians
-                ? `<img src="logocorinthians.png" class="escudo-timao" alt="Timão">`
-                : '';
-
-            lista.innerHTML += `
-                    <div class="${classeCard}">
-                        ${escudoTimãoHTML}
-                        <div class="card-header">
-                            <div class="avatar-cool" style="background: ${getAvatarColor(jogador.nome)}">${getInitials(jogador.nome)}</div>
-                            <div>
-                                <h2>${jogador.nome}</h2>
-                                <div class="status-bid">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    REGULARIZADO
-                                </div>
-                                <div class="data-registro">Publicado em: ${hoje}</div>
-                            </div>
-                        </div>
-                        <div class="badge-container">
-                            <div class="badge">👟 ${jogador.posicao}</div>
-                            <div class="badge">🛡️ ${nomeClube}</div>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn-editar" onclick="abrirModalEdicao(${jogador.id}, '${jogador.nome}', '${jogador.posicao}', '${nomeClube}')">Editar Contrato</button>
-                            <button class="btn-excluir" onclick="deletarJogador(${jogador.id})">Rescindir</button>
-                        </div>
-                    </div>
-                `;
-        });
-    }
-
+    // --- LÓGICA DE FILTROS RESTAURADA ---
     function setFiltroRapido(termoFiltro, elemento) {
         filtroRapidoAtual = termoFiltro;
-
         document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
         elemento.classList.add('active');
-
         aplicarFiltros();
     }
 
     function aplicarFiltros() {
         const termoBusca = document.getElementById('pesquisa').value.toLowerCase();
-
         const dadosFiltrados = jogadoresMemoria.filter(j => {
-            const matchBusca = j.nome.toLowerCase().includes(termoBusca) ||
-                j.posicao.toLowerCase().includes(termoBusca) ||
-                (j.clube && j.clube.toLowerCase().includes(termoBusca));
-
+            const matchBusca = j.nome.toLowerCase().includes(termoBusca) || j.posicao.toLowerCase().includes(termoBusca) || (j.clube && j.clube.toLowerCase().includes(termoBusca));
             let matchChip = false;
-            if (filtroRapidoAtual === 'Todos') {
-                matchChip = true;
-            } else {
+            if (filtroRapidoAtual === 'Todos') { matchChip = true; }
+            else {
                 const termosValidos = positionMap[filtroRapidoAtual];
-                if (termosValidos) {
-                    const posLower = j.posicao.toLowerCase().trim();
-                    matchChip = termosValidos.some(termo => posLower.includes(termo));
-                }
+                if (termosValidos) { matchChip = termosValidos.some(termo => j.posicao.toLowerCase().trim().includes(termo)); }
             }
-
             return matchBusca && matchChip;
         });
 
-        renderizarJogadores(dadosFiltrados);
+        renderizarCards(dadosFiltrados, 'lista-jogadores');
+        document.getElementById('total-jogadores').innerText = dadosFiltrados.length;
     }
 
+    function renderizarListasGerais() {
+        aplicarFiltros(); // Aplica os filtros na tela do BID
+
+        // Tela Corinthians continua fixa (apenas quem joga no time)
+        const corinthianos = jogadoresMemoria.filter(j => j.clube && (j.clube.toLowerCase().includes('corinthians') || j.clube.toLowerCase() === 'sccp'));
+        renderizarCards(corinthianos, 'lista-corinthians');
+        document.getElementById('total-corinthians').innerText = corinthianos.length;
+    }
+
+    function renderizarCards(dados, containerId) {
+        const lista = document.getElementById(containerId);
+        lista.innerHTML = '';
+        dados.forEach(jogador => {
+            const nomeClube = jogador.clube || 'Sem Clube';
+            const isCorinthians = nomeClube.toLowerCase().trim() === 'corinthians' || nomeClube.toLowerCase().trim() === 'sccp';
+            const classeCard = isCorinthians ? 'card card-alvinegro' : 'card';
+            const escudoHTML = isCorinthians ? `<img src="logocorinthians.png" class="escudo-timao">` : '';
+
+            let numero = jogador.numero; let pais = jogador.pais;
+            if (!numero || !pais) { const fb = playerDetails[jogador.nome.trim().toLowerCase()] || {pais:'br', numero:10}; numero = numero || fb.numero; pais = pais || fb.pais; }
+
+            const nomeNormalizado = jogador.nome.trim().toLowerCase();
+            const avatarPath = playerPhotos[nomeNormalizado] || '';
+            let avatarHTML = avatarPath ? `<img src="${avatarPath}" class="avatar-photo">` : `<div class="avatar-cool" style="background:#555">${getInitials(jogador.nome)}</div>`;
+
+            // Preparar dados para o Perfil
+            const strDados = encodeURIComponent(JSON.stringify({...jogador, clube: nomeClube, numero: numero, pais: pais, avatarSrc: avatarPath, isCorinthians: isCorinthians}));
+            const jNome = jogador.nome.replace(/'/g, "\\'"); const jPos = jogador.posicao.replace(/'/g, "\\'"); const jClube = nomeClube.replace(/'/g, "\\'");
+
+            // Clicar no Card abre o Perfil. event.stopPropagation() nos botões previne que o Perfil abra junto.
+            lista.innerHTML += `
+                <div class="${classeCard}" onclick="abrirPerfil('${strDados}')">
+                    ${escudoHTML}
+                    <img src="https://flagcdn.com/w40/${pais.toLowerCase()}.png" class="bandeira-pais">
+                    <div class="card-header">
+                        ${avatarHTML}
+                        <div>
+                            <h2>${jogador.nome}</h2>
+                            <span style="font-size:11px; color:#888;">#${numero} | ${jogador.posicao}</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-editar" onclick="event.stopPropagation(); abrirModalEdicao(${jogador.id}, '${jNome}', '${jPos}', '${jClube}', '${numero}', '${pais}')">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn-excluir" onclick="event.stopPropagation(); deletarJogador(${jogador.id})">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // --- FUNÇÕES DE PERFIL RESTAURADAS ---
+    function abrirPerfil(strDadosEnc) {
+        const dados = JSON.parse(decodeURIComponent(strDadosEnc));
+        const conteudo = document.getElementById('perfil-conteudo');
+        const iconeClube = dados.isCorinthians ? '🦅' : '🛡️';
+
+        let htmlFoto = dados.avatarSrc ? `<img src="${dados.avatarSrc}" class="perfil-avatar">` : `<div class="perfil-avatar-iniciais" style="background: #555">${getInitials(dados.nome)}</div>`;
+
+        conteudo.innerHTML = `
+            <div class="perfil-header">
+                ${htmlFoto}
+                <h2 class="perfil-nome">${dados.nome}</h2>
+                <div class="perfil-posicao">${dados.posicao}</div>
+            </div>
+            <div class="perfil-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Clube</div>
+                    <div class="stat-value">${iconeClube} ${dados.clube}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Camisa</div>
+                    <div class="stat-value">#${dados.numero}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Nacionalidade</div>
+                    <div class="stat-value">
+                        <img src="https://flagcdn.com/w40/${dados.pais.toLowerCase()}.png" alt="Bandeira">
+                        ${dados.pais.toUpperCase()}
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('modalPerfil').style.display = 'flex';
+    }
+
+    function fecharModalPerfil() { document.getElementById('modalPerfil').style.display = 'none'; }
+
+    // --- CRUD ---
     function salvarJogador() {
-        const nome = document.getElementById('nome').value;
-        const posicao = document.getElementById('posicao').value;
-        const clube = document.getElementById('clube').value;
-
-        if (!nome || !posicao || !clube) {
-            mostrarToast("Preencha todos os campos da papelada!", "error");
-            return;
-        }
-
-        const payload = { nome: nome, posicao: posicao, clube: clube };
-
-        fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-            .then(response => {
-                if (response.ok) {
-                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#4A00E0', '#f26622', '#c94b4b', '#ffffff'], zIndex: 9999 });
-                    document.getElementById('nome').value = '';
-                    document.getElementById('posicao').value = '';
-                    document.getElementById('clube').value = '';
-                    carregarJogadores();
-                    mostrarToast("Jogador publicado no BID!", "success");
-                } else {
-                    mostrarToast("Erro ao processar contrato no sistema.", "error");
+        const payload = { nome: document.getElementById('nome').value, posicao: document.getElementById('posicao').value, clube: document.getElementById('clube').value, numero: parseInt(document.getElementById('numero').value || 10), pais: document.getElementById('pais').value || 'br' };
+        if(!payload.nome || !payload.posicao || !payload.clube) { mostrarToast("Preencha os dados básicos!", "error"); return; }
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(res => {
+                if(res.ok) {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }});
+                    ['nome','posicao','clube','numero','pais'].forEach(id => document.getElementById(id).value = '');
+                    carregarJogadores(); mostrarToast("Jogador publicado no BID!", "success");
                 }
-            })
-            .catch(error => mostrarToast("Erro de conexão.", "error"));
+            });
     }
 
-    function salvarEdicao() {
-        const id = document.getElementById('edit-jogador-id').value;
-        const nome = document.getElementById('edit-nome').value;
-        const posicao = document.getElementById('edit-posicao').value;
-        const clube = document.getElementById('edit-clube').value;
-
-        if (!nome || !posicao || !clube) {
-            mostrarToast("Preencha todos os campos!", "error");
-            return;
-        }
-
-        const payload = { nome: nome, posicao: posicao, clube: clube };
-
-        fetch(`${API_URL}/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-            .then(response => {
-                if (response.ok) {
-                    fecharModal();
-                    carregarJogadores();
-                    mostrarToast("Contrato atualizado com sucesso!", "success");
-                } else {
-                    mostrarToast("Erro ao atualizar contrato.", "error");
-                }
-            })
-            .catch(error => mostrarToast("Erro de conexão.", "error"));
-    }
-
-    function abrirModalEdicao(id, nome, posicao, clube) {
-        document.getElementById('edit-jogador-id').value = id;
-        document.getElementById('edit-nome').value = nome;
-        document.getElementById('edit-posicao').value = posicao;
-        document.getElementById('edit-clube').value = clube === 'Sem Clube' ? '' : clube;
-
+    function abrirModalEdicao(id, nome, posicao, clube, numero, pais) {
+        document.getElementById('edit-jogador-id').value = id; document.getElementById('edit-nome').value = nome; document.getElementById('edit-posicao').value = posicao; document.getElementById('edit-clube').value = clube === 'Sem Clube' ? '' : clube; document.getElementById('edit-numero').value = numero; document.getElementById('edit-pais').value = pais;
         document.getElementById('modalEdicao').style.display = 'flex';
     }
 
-    function fecharModal() {
-        document.getElementById('modalEdicao').style.display = 'none';
+    function fecharModalEdicao() { document.getElementById('modalEdicao').style.display = 'none'; }
+
+    function salvarEdicao() {
+        const id = document.getElementById('edit-jogador-id').value;
+        const payload = { nome: document.getElementById('edit-nome').value, posicao: document.getElementById('edit-posicao').value, clube: document.getElementById('edit-clube').value, numero: parseInt(document.getElementById('edit-numero').value || 10), pais: document.getElementById('edit-pais').value || 'br' };
+        fetch(`${API_URL}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(res => { if(res.ok) { fecharModalEdicao(); carregarJogadores(); mostrarToast("Contrato atualizado!", "success"); } });
     }
 
     function deletarJogador(id) {
-        if (confirm('Atenção: Tem certeza que deseja rescindir este contrato? Esta ação é irreversível.')) {
-            fetch(`${API_URL}/${id}`, { method: 'DELETE' })
-                .then(response => {
-                    if (response.ok) {
-                        carregarJogadores();
-                        mostrarToast("Contrato rescindido com sucesso.", "success");
-                    }
-                });
-        }
+        if (confirm('Atenção: Tem certeza que deseja rescindir este contrato?')) { fetch(`${API_URL}/${id}`, { method: 'DELETE' }).then(res => { if (res.ok) { carregarJogadores(); mostrarToast("Contrato rescindido.", "success"); } }); }
     }
 
-    function mostrarToast(mensagem, tipo) {
-        const toast = document.getElementById("toast");
-        toast.innerText = mensagem;
-        toast.className = "show " + tipo;
-        setTimeout(function(){ toast.className = toast.className.replace("show " + tipo, ""); }, 3000);
+    // --- ESCALAÇÃO E CAMPO TÁTICO ---
+    let escalacaoAtual = {};
+
+    function desenharCampo() {
+        const campo = document.getElementById('campo-futebol');
+        const posicoes = formacoesTaticas[document.getElementById('select-formacao').value];
+        document.querySelectorAll('.bolinha-jogador').forEach(el => el.remove());
+
+        escalacaoAtual = {};
+
+        posicoes.forEach(posData => {
+            const bolinha = document.createElement('div');
+            bolinha.className = 'bolinha-jogador'; bolinha.id = 'pos-' + posData.id;
+            bolinha.setAttribute('data-posicao', posData.pos);
+            bolinha.style.bottom = posData.bottom; bolinha.style.left = posData.left;
+
+            bolinha.innerHTML = `<div class="bolinha-img-container" style="background:#222; font-size:20px; color:#555;">+</div><span class="sigla-posicao">${posData.pos}</span>`;
+            bolinha.onclick = () => abrirListaParaEscalar(bolinha.id);
+            campo.appendChild(bolinha);
+        });
+        atualizarPainelLateral();
+    }
+
+    function limparEscalacao() { desenharCampo(); }
+
+    function abrirListaParaEscalar(posId) {
+        bolinhaAtualId = posId; document.getElementById('modalListaJogadores').style.display = 'flex'; renderizarListaEscalacao(jogadoresMemoria);
+    }
+
+    function fecharListaEscalacao() { document.getElementById('modalListaJogadores').style.display = 'none'; document.getElementById('pesquisa-lista').value = ''; }
+
+    function renderizarListaEscalacao(jogadores) {
+        const divConteudo = document.getElementById('conteudo-lista-jogadores');
+        divConteudo.innerHTML = '';
+        jogadores.forEach(j => {
+            const nomeNorm = j.nome.trim().toLowerCase(); const avatarSrc = playerPhotos[nomeNorm] || '';
+            const fotoHTML = avatarSrc ? `<img src="${avatarSrc}">` : `<div style="width:45px;height:45px;border-radius:50%;background:#333;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;">${getInitials(j.nome)}</div>`;
+            const strDados = encodeURIComponent(JSON.stringify(j));
+
+            divConteudo.innerHTML += `
+                <div class="lista-item" onclick="escalarJogador('${strDados}')">
+                    ${fotoHTML}
+                    <div><strong style="color: #2b1055; font-family: 'Montserrat';">${j.nome}</strong><br><span style="font-size: 12px; color: #777;">${j.posicao} | ${j.clube}</span></div>
+                </div>
+            `;
+        });
+    }
+
+    function filtrarListaEscalacao() {
+        const termo = document.getElementById('pesquisa-lista').value.toLowerCase();
+        renderizarListaEscalacao(jogadoresMemoria.filter(j => j.nome.toLowerCase().includes(termo) || j.posicao.toLowerCase().includes(termo)));
+    }
+
+    function escalarJogador(strDadosEnc) {
+        const jogador = JSON.parse(decodeURIComponent(strDadosEnc));
+        const bolinha = document.getElementById(bolinhaAtualId);
+
+        for (const posId in escalacaoAtual) {
+            if (escalacaoAtual[posId].id === jogador.id) {
+                delete escalacaoAtual[posId];
+                const dotAntigo = document.getElementById(posId);
+                if(dotAntigo) { const siglaPos = dotAntigo.getAttribute('data-posicao'); dotAntigo.innerHTML = `<div class="bolinha-img-container" style="background:#222; font-size:20px; color:#555;">+</div><span class="sigla-posicao">${siglaPos}</span>`; dotAntigo.style.border = "3px solid #f26622"; }
+            }
+        }
+
+        escalacaoAtual[bolinhaAtualId] = jogador;
+        const nomeNorm = jogador.nome.trim().toLowerCase(); const avatarSrc = playerPhotos[nomeNorm] || ''; const primeiroNome = jogador.nome.split(' ')[0];
+
+        if (avatarSrc) { bolinha.innerHTML = `<div class="bolinha-img-container"><img src="${avatarSrc}"></div><span class="sigla-posicao">${primeiroNome}</span>`; }
+        else { bolinha.innerHTML = `<div class="bolinha-img-container" style="background:#555; color:#fff; font-size:16px; font-weight:bold;">${getInitials(jogador.nome)}</div><span class="sigla-posicao">${primeiroNome}</span>`; }
+
+        bolinha.style.border = "3px solid #fff";
+        fecharListaEscalacao(); atualizarPainelLateral();
+    }
+
+    function atualizarPainelLateral() {
+        const divTitulares = document.getElementById('lista-titulares'); const divReservas = document.getElementById('lista-reservas');
+        divTitulares.innerHTML = ''; divReservas.innerHTML = '';
+        const idsEscalados = Object.values(escalacaoAtual).map(j => j.id);
+        if(jogadoresMemoria.length === 0) return;
+
+        Object.values(escalacaoAtual).forEach(j => { divTitulares.innerHTML += criarTemplateItemElenco(j, true); });
+        jogadoresMemoria.forEach(j => { if(!idsEscalados.includes(j.id)) { divReservas.innerHTML += criarTemplateItemElenco(j, false); } });
+    }
+
+    function criarTemplateItemElenco(jogador, isTitular) {
+        const nomeNorm = jogador.nome.trim().toLowerCase(); const avatarSrc = playerPhotos[nomeNorm] || '';
+        const foto = avatarSrc ? `<img src="${avatarSrc}">` : `<div class="avatar-mini">${getInitials(jogador.nome)}</div>`;
+        const corStatus = isTitular ? 'status-titular' : 'status-reserva';
+        let num = jogador.numero; if (!num) { const fb = playerDetails[nomeNorm]; num = fb ? fb.numero : '--'; }
+
+        return `<div class="item-elenco-direito">${foto}<div class="info"><div class="nome">${jogador.nome}</div><div class="pos">${jogador.posicao} | #${num}</div></div><div class="status-bolinha ${corStatus}"></div></div>`;
     }
 </script>
 </body>

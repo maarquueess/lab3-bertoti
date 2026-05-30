@@ -40,7 +40,12 @@ public class JogadorController {
                 .map(jogadorExistente -> {
                     jogadorExistente.setNome(jogadorAtualizado.getNome());
                     jogadorExistente.setPosicao(jogadorAtualizado.getPosicao());
-                    jogadorExistente.setClube(jogadorAtualizado.getClube()); // Descomentado para o CRUD visual funcionar 100%!
+                    jogadorExistente.setClube(jogadorAtualizado.getClube());
+
+                    // Salvando os novos campos:
+                    jogadorExistente.setNumero(jogadorAtualizado.getNumero());
+                    jogadorExistente.setPais(jogadorAtualizado.getPais());
+
                     return org.springframework.http.ResponseEntity.ok(jogadorRepository.save(jogadorExistente));
                 })
                 .orElse(org.springframework.http.ResponseEntity.notFound().build());

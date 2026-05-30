@@ -27,5 +27,6 @@ public class Jogador {
 
     private String clube;
 
-
+    private Integer numero;
+    private String pais;
 }
